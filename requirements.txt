@@ -1,5 +1,3 @@
 Flask
-flask_cors
-gTTS
-gunicorn
-ffmpeg-python
+elevenlabs
+python-dotenv
