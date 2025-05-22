@@ -1,7 +1,6 @@
 services:
   - type: web
-    name: tts-api
+    name: tts-elevenlabs
     env: python
-    buildCommand: "pip install -r requirements.txt"
-    startCommand: "gunicorn app:app"
-    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
