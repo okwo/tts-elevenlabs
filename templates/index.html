@@ -93,46 +93,47 @@
   <script>
     let audioBlobUrl = null;
 
-    async function convertText() {
-      const text = document.getElementById('text-input').value;
-      const speed = parseFloat(document.getElementById('speed-select').value);
-      const statusEl = document.getElementById('status');
-      statusEl.textContent = 'กำลังแปลงเสียง...';
-      statusEl.style.color = 'green';
+async function convertText() {
+  const text = document.getElementById('text-input').value;
+  const speed = parseFloat(document.getElementById('speed-select').value);
+  const voice = document.getElementById('voice-select').value;
+  const statusEl = document.getElementById('status');
+  statusEl.textContent = 'กำลังแปลงเสียง...';
+  statusEl.style.color = 'green';
 
-      try {
-        const response = await fetch('/api/convert', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ text, speed })
-        });
+  try {
+    const response = await fetch('/api/convert', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ text, speed, voice })
+    });
 
-        if (!response.ok) {
-          statusEl.textContent = '❌ เกิดข้อผิดพลาดในการแปลงเสียง';
-          statusEl.style.color = 'red';
-          return;
-        }
-
-        const blob = await response.blob();
-        audioBlobUrl = URL.createObjectURL(blob);
-
-        const audio = document.getElementById('audio-player');
-        audio.src = audioBlobUrl;
-
-        statusEl.textContent = '✅ แปลงไฟล์สำเร็จ';
-        statusEl.style.color = 'blue';
-
-        document.getElementById('play-btn').disabled = false;
-        document.getElementById('download-btn').disabled = false;
-
-      } catch (error) {
-        statusEl.textContent = '❌ ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้';
-        statusEl.style.color = 'red';
-        console.error(error);
-      }
+    if (!response.ok) {
+      statusEl.textContent = '❌ เกิดข้อผิดพลาดในการแปลงเสียง';
+      statusEl.style.color = 'red';
+      return;
     }
+
+    const blob = await response.blob();
+    audioBlobUrl = URL.createObjectURL(blob);
+
+    const audio = document.getElementById('audio-player');
+    audio.src = audioBlobUrl;
+
+    statusEl.textContent = '✅ แปลงไฟล์สำเร็จ';
+    statusEl.style.color = 'blue';
+
+    document.getElementById('play-btn').disabled = false;
+    document.getElementById('download-btn').disabled = false;
+
+  } catch (error) {
+    statusEl.textContent = '❌ ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้';
+    statusEl.style.color = 'red';
+    console.error(error);
+  }
+}
 
     function playAudio() {
       const audio = document.getElementById('audio-player');
