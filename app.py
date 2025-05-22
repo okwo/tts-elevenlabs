@@ -1,38 +1,22 @@
-from flask import Flask, request, send_file, render_template
-from flask_cors import CORS
-from gtts import gTTS
-import tempfile, os, subprocess
+import os
+from flask import Flask, request, send_file
+from elevenlabs import generate, save, set_api_key
+from dotenv import load_dotenv
+
+load_dotenv()
+set_api_key(os.getenv("ELEVEN_API_KEY"))
 
 app = Flask(__name__)
-CORS(app)
-
-@app.route("/")
-def home():
-    return render_template("index.html")
 
 @app.route("/api/convert", methods=["POST"])
-def convert():
-    data = request.get_json()
+def convert_text():
+    data = request.json
     text = data.get("text", "")
+    voice = "Bella"  # สามารถเปลี่ยนเป็น "Antoni", "Rachel", "Adam" หรืออื่นๆ
     speed = float(data.get("speed", 1.0))
 
-    with tempfile.TemporaryDirectory() as tmpdir:
-        tts_path = os.path.join(tmpdir, "tts.mp3")
-        wav_path = os.path.join(tmpdir, "tts.wav")
-        output_path = os.path.join(tmpdir, "output.wav")
+    audio = generate(text=text, voice=voice, model="eleven_multilingual_v2")
 
-        tts = gTTS(text=text, lang="th")
-        tts.save(tts_path)
-
-        subprocess.run(["ffmpeg", "-y", "-i", tts_path, wav_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-
-        if speed == 1.0:
-            os.rename(wav_path, output_path)
-        else:
-            subprocess.run(["ffmpeg", "-y", "-i", wav_path, "-filter:a", f"atempo={speed}", output_path],
-                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-
-        return send_file(output_path, mimetype="audio/wav")
-
-if __name__ == "__main__":
-    app.run()
+    output_path = "output.wav"
+    save(audio, output_path)
+    return send_file(output_path, mimetype="audio/wav")
