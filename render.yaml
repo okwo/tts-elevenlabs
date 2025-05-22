@@ -1,1 +1,11 @@
+services:
+  - type: web
+    name: tts-elevenlabs
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: ELEVEN_API_KEY
+        sync: true
 
+🔧 แก้ render.yaml ให้ถูกต้องสำหรับ Flask + ElevenLabs
