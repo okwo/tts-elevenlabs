@@ -1,6 +1,4 @@
 Flask
 flask_cors
-gTTS
-gunicorn
-elevenlabs
 python-dotenv
+elevenlabs
