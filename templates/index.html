@@ -33,6 +33,11 @@
       display: block;
       margin-top: 10px;
     }
+    #loading {
+      margin-top: 10px;
+      color: gray;
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -54,37 +59,55 @@
   </div>
 
   <button onclick="convert()">▶️ ฟังเสียง</button>
+  <p id="loading">⏳ กำลังสร้างเสียง โปรดรอสักครู่...</p>
 
   <audio id="audio" controls style="margin-top: 20px; display: none;"></audio>
 
   <script>
     const speedSlider = document.getElementById("speed");
     const speedValue = document.getElementById("speed-value");
+    const loading = document.getElementById("loading");
 
     speedSlider.oninput = () => {
       speedValue.textContent = speedSlider.value + "x";
     };
 
     async function convert() {
-      const text = document.getElementById("text").value;
+      const text = document.getElementById("text").value.trim();
       const voice = document.getElementById("voice-select").value;
       const speed = parseFloat(document.getElementById("speed").value);
 
-      const response = await fetch("/api/convert", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text, voice, speed })
-      });
+      if (!text) {
+        alert("กรุณาใส่ข้อความก่อนทำการแปลงเสียง");
+        return;
+      }
 
-      if (response.ok) {
-        const blob = await response.blob();
-        const audioURL = URL.createObjectURL(blob);
-        const audio = document.getElementById("audio");
-        audio.src = audioURL;
-        audio.style.display = "block";
-        audio.play();
-      } else {
-        alert("เกิดข้อผิดพลาดในการแปลงเสียง");
+      loading.style.display = "block";
+
+      try {
+        const response = await fetch("/api/convert", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text, voice, speed })
+        });
+
+        loading.style.display = "none";
+
+        if (response.ok) {
+          const blob = await response.blob();
+          const audioURL = URL.createObjectURL(blob);
+          const audio = document.getElementById("audio");
+          audio.src = audioURL;
+          audio.style.display = "block";
+          audio.play();
+        } else {
+          const errorData = await response.json();
+          alert("เกิดข้อผิดพลาด: " + errorData.error);
+        }
+      } catch (error) {
+        loading.style.display = "none";
+        alert("ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้");
+        console.error(error);
       }
     }
   </script>
